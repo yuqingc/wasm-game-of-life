@@ -72,13 +72,18 @@ function drawCells() {
     ctx.stroke();
 }
 
-const renderLoop = () => {
+let startTime = null;
+const renderLoop = (timestamp) => {
+    if (!startTime) startTime = timestamp;
     universe.tick();
 
     drawGrid();
     drawCells();
 
-    requestAnimationFrame(renderLoop);
+    const progress = timestamp - startTime;
+    if (progress < 10000) {
+        requestAnimationFrame(renderLoop);
+    }
 }
 
 drawGrid();
