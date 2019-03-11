@@ -72,20 +72,66 @@ function drawCells() {
     ctx.stroke();
 }
 
-let startTime = null;
+// let startTime = null;
+let animationId = null;
 const renderLoop = (timestamp) => {
-    if (!startTime) startTime = timestamp;
+    // if (!startTime) startTime = timestamp;
+    drawGrid();
+    drawCells();
     universe.tick();
+
+    // const progress = timestamp - startTime;
+    animationId = requestAnimationFrame(renderLoop);
+}
+
+function isPaused() {
+    return animationId === null;
+}
+
+const playPauseButton = document.getElementById("play-pause");
+
+function play() {
+    playPauseButton.textContent = "Pause";
+    renderLoop();
+}
+
+function pause() {
+    playPauseButton.textContent = "Play";
+    cancelAnimationFrame(animationId);
+    animationId = null;
+}
+
+playPauseButton.addEventListener("click", function(e) {
+    if (isPaused()) {
+        play();
+    } else {
+        pause();
+    }
+});
+
+canvas.addEventListener("click", function(event) {
+    const boundingRect = canvas.getBoundingClientRect();
+
+    // console.log('canvas width height', canvas.width, canvas.height);
+    // console.log('rect', boundingRect);
+
+    const scaleX = canvas.width / boundingRect.width;
+    const scaleY = canvas.height / boundingRect.height;
+
+    const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+    const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+    const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
+    const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
+
+    universe.toggle_cell(row, col);
 
     drawGrid();
     drawCells();
+});
 
-    const progress = timestamp - startTime;
-    if (progress < 10000) {
-        requestAnimationFrame(renderLoop);
-    }
-}
+play();
 
-drawGrid();
-drawCells();
-requestAnimationFrame(renderLoop);
+// drawGrid();
+// drawCells();
+// requestAnimationFrame(renderLoop);
